@@ -1,0 +1,61 @@
+<form class="form-horizontal js-ajax-form clearfix" action="{:U('Configs/add')}" method='post' >
+    <!-- 自定义大小 -->
+    <div class="form-group">
+        <label for="config_mark" class="col-sm-2 control-label">标识</label>
+        <div class="col-sm-4">
+            <input type="text" class="form-control"  name="config_mark"  id="config_mark" placeholder="标识"  value="">
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="config_name" class="col-sm-2 control-label">名称</label>
+        <div class="col-sm-4">
+            <input type="text" name="config_name" class="form-control" id="config_name" placeholder="名称" value="">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="config_value" class="col-sm-2 control-label">配置值</label>
+        <div class="col-sm-4">
+            <input type="text" name="config_value" class="form-control" id="config_value" placeholder="配置值" value="">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="config_des" class="col-sm-2 control-label">描述</label>
+        <div class="col-sm-4">
+            <input type="text" name="config_des" class="form-control" id="config_des" placeholder="配置描述" value="">
+        </div>
+    </div>
+    <div class="form-group">
+        <label  class="col-sm-2 control-label"></label>
+        <div class="col-sm-4">
+            <button type="submit" class="btn btn-primary  js-submit-btn mr_3px">确认</button>
+            <button type="reset" class="btn btn-primary ">重置</button>
+        </div>
+    </div>
+</form>
+<script>
+    $('#config_type_value').css('display','none');
+    $('select[name="type"]').change(function(){
+       var type_val = $(this).val();
+       if(type_val == 'checkbox'|| type_val == 'select' ||type_val == 'radio'){
+           $("#config_type_value").css('display','block');
+        }else{
+           $('.close_type').parents('tr').remove();
+           $('input[name^="type_"]').val('');
+           $("#config_type_value").css('display','none');
+       }
+    })
+    var num  = 0;
+    $(document).on('click','.add_type',function(){
+        num++;
+        var html = '<tr><td><input type="text" name="type_val['+num+']" class="form-control"></td>'
+                 + '<td><a href="" class="btn btn-default close_type"><i class="fa fa-minus"></i></a></td></tr>'
+        $(this).parents('table').append(html)
+        return false;
+    })
+    $(document).on('click','.close_type',function(){
+        $(this).parents('tr').remove();
+        return false;
+    })
+</script>

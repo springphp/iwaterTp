@@ -1,0 +1,43 @@
+<form class="form-horizontal js-ajax-form clearfix" action="{:U('Configs/edit')}" method='post'>
+    <!-- 自定义大小 -->
+    <input type="hidden" name="id" class="form-control" value="{$config_info.id}">
+    <div class="form-group">
+        <label  class="col-sm-2 control-label">标识</label>
+            <div class="col-sm-4">
+                <p class="form-control-static">{$config_info.config_mark}</p>
+            </div>
+    </div>
+    <div class="form-group">
+        <label for="config_name" class="col-sm-2 control-label">名称</label>
+        <div class="col-sm-4">
+            <input type="text" name="config_name" class="form-control" id="config_name" placeholder="名称" value="{$config_info.config_name}">
+        </div>
+    </div>
+    <div  class="form-group" >
+        <label for="sort" class="col-sm-2 control-label">排序</label>
+        <div class="col-sm-2">
+            <input type="text" name="sort" class="form-control" id="sort" placeholder="排序" value="{$config_info.sort}">
+        </div>
+    </div>
+   <div class="form-group">
+        <label for="config_value" class="col-sm-2 control-label">配置值</label>
+        <div class="col-sm-4">
+            <input type="text" name="config_value" class="form-control" id="config_value" 
+            placeholder="配置值" value="{$config_info.config_value}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="config_des" class="col-sm-2 control-label">描述</label>
+        <div class="col-sm-4">
+            <input type="text" name="config_des" class="form-control" id="config_des" placeholder="配置描述" value="{$config_info.config_des}">
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <label  class="col-sm-2 control-label"></label>
+        <div class="col-sm-4">
+            <button type="submit" class="btn btn-info js-submit-btn mr_3px">确认</button>
+            <button type="reset" class="btn btn-info">重置</button>
+        </div>
+    </div>
+</form>
