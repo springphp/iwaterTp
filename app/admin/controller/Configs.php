@@ -44,8 +44,7 @@ class Configs extends AdminBase
      * 修改配置
      * */
     public function edit(){
-        input('idacard','','trim')
-        $page = input('page');
+        $page = input('page','1','trim');
         $config_id = input('id');
         $config_info = db('Config')->where('id',$config_id)->find();
         if (request()->isAjax()){

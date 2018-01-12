@@ -34,8 +34,8 @@ class Admins extends AdminBase{
     public function edit(){
     	$authGroup =model('AuthGroup')->where('group_id != 1')->select();
     	resultToArray($authGroup);
-    	$admin_id=input('admin_id');
-    	$admin_info = Admin::get($admin_id)->toArray();
+    	$admin_id = input('admin_id');
+    	$admin_info = model('admin')->where('admin_id',$admin_id)->find()->toArray();
         $page =input('page');
     	if (request()->isAjax()) {
             $data=input();
