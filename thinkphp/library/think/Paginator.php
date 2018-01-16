@@ -2,7 +2,7 @@
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
-// | Copyright (c) 2006~2018 http://thinkphp.cn All rights reserved.
+// | Copyright (c) 2006~2017 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -17,55 +17,32 @@ use Countable;
 use IteratorAggregate;
 use JsonSerializable;
 use Traversable;
+use think\Request;
 
 abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, JsonSerializable
 {
-    /**
-     * 是否简洁模式
-     * @var bool
-     */
+    /** @var bool 是否为简洁模式 */
     protected $simple = false;
 
-    /**
-     * 数据集
-     * @var Collection
-     */
+    /** @var Collection 数据集 */
     protected $items;
 
-    /**
-     * 当前页
-     * @var integer
-     */
+    /** @var integer 当前页 */
     protected $currentPage;
 
-    /**
-     * 最后一页
-     * @var integer
-     */
+    /** @var  integer 最后一页 */
     protected $lastPage;
 
-    /**
-     * 数据总数
-     * @var integer|null
-     */
+    /** @var integer|null 数据总数 */
     protected $total;
 
-    /**
-     * 每页数量
-     * @var integer
-     */
+    /** @var  integer 每页的数量 */
     protected $listRows;
 
-    /**
-     * 是否有下一页
-     * @var bool
-     */
+    /** @var bool 是否有下一页 */
     protected $hasMore;
 
-    /**
-     * 分页配置
-     * @var array
-     */
+    /** @var array 一些配置 */
     protected $options = [
         'var_page' => 'page',
         'path'     => '/',
@@ -75,12 +52,14 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
 
     public function __construct($items, $listRows, $currentPage = null, $total = null, $simple = false, $options = [])
     {
+        // $currentPage = input(config('paginate.var_page')) ?: $currentPage;
+        $currentPage = Request::instance()->request('page')?: $currentPage;
+        $this->listRows = Request::instance()->request('pageSize')?:(Session::get('pageSize')?:$listRows);
+        Session::set('pageSize', $this->listRows);
         $this->options = array_merge($this->options, $options);
-
         $this->options['path'] = '/' != $this->options['path'] ? rtrim($this->options['path'], '/') : $this->options['path'];
-
         $this->simple   = $simple;
-        $this->listRows = $listRows;
+        // $this->listRows = $listRows;
 
         if (!$items instanceof Collection) {
             $items = Collection::make($items);
@@ -92,15 +71,15 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
             $items             = $items->slice(0, $this->listRows);
         } else {
             $this->total       = $total;
-            $this->lastPage    = (int) ceil($total / $listRows);
+            $this->lastPage    = (int) ceil($total / $this->listRows);
             $this->currentPage = $this->setCurrentPage($currentPage);
             $this->hasMore     = $this->currentPage < $this->lastPage;
         }
+        // dump($currentPage);
         $this->items = $items;
     }
 
     /**
-     * @access public
      * @param       $items
      * @param       $listRows
      * @param null  $currentPage
@@ -126,8 +105,7 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
     /**
      * 获取页码对应的链接
      *
-     * @access protected
-     * @param  $page
+     * @param $page
      * @return string
      */
     protected function url($page)
@@ -143,30 +121,25 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
             $parameters = [];
             $path       = str_replace('[PAGE]', $page, $this->options['path']);
         }
-
         if (count($this->options['query']) > 0) {
             $parameters = array_merge($this->options['query'], $parameters);
         }
-
         $url = $path;
         if (!empty($parameters)) {
             $url .= '?' . urldecode(http_build_query($parameters, null, '&'));
         }
-
         return $url . $this->buildFragment();
     }
 
     /**
      * 自动获取当前页码
-     * @access public
-     * @param  string $varPage
-     * @param  int    $default
+     * @param string $varPage
+     * @param int    $default
      * @return int
      */
     public static function getCurrentPage($varPage = 'page', $default = 1)
     {
-        $page = Container::get('request')->param($varPage);
-
+        $page = Request::instance()->request($varPage)?:input($varPage);
         if (filter_var($page, FILTER_VALIDATE_INT) !== false && (int) $page >= 1) {
             return $page;
         }
@@ -176,12 +149,11 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
 
     /**
      * 自动获取当前的path
-     * @access public
      * @return string
      */
     public static function getCurrentPath()
     {
-        return Container::get('request')->baseUrl();
+        return Request::instance()->baseUrl();
     }
 
     public function total()
@@ -189,7 +161,6 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
         if ($this->simple) {
             throw new \DomainException('not support total');
         }
-
         return $this->total;
     }
 
@@ -208,13 +179,11 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
         if ($this->simple) {
             throw new \DomainException('not support last');
         }
-
         return $this->lastPage;
     }
 
     /**
      * 数据是否足够分页
-     * @access public
      * @return boolean
      */
     public function hasPages()
@@ -225,7 +194,6 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
     /**
      * 创建一组分页链接
      *
-     * @access public
      * @param  int $start
      * @param  int $end
      * @return array
@@ -244,21 +212,18 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
     /**
      * 设置URL锚点
      *
-     * @access public
      * @param  string|null $fragment
      * @return $this
      */
     public function fragment($fragment)
     {
         $this->options['fragment'] = $fragment;
-
         return $this;
     }
 
     /**
      * 添加URL参数
      *
-     * @access public
      * @param  array|string $key
      * @param  string|null  $value
      * @return $this
@@ -283,7 +248,6 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
     /**
      * 构造锚点字符串
      *
-     * @access public
      * @return string
      */
     protected function buildFragment()
@@ -293,7 +257,6 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
 
     /**
      * 渲染分页html
-     * @access public
      * @return mixed
      */
     abstract public function render();
@@ -314,30 +277,7 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
     }
 
     /**
-     * 给每个元素执行个回调
-     *
-     * @access public
-     * @param  callable $callback
-     * @return $this
-     */
-    public function each(callable $callback)
-    {
-        foreach ($this->items as $key => $item) {
-            $result = $callback($item, $key);
-
-            if (false === $result) {
-                break;
-            } elseif (!is_object($item)) {
-                $this->items[$key] = $result;
-            }
-        }
-
-        return $this;
-    }
-
-    /**
      * Retrieve an external iterator
-     * @access public
      * @return Traversable An instance of an object implementing <b>Iterator</b> or
      * <b>Traversable</b>
      */
@@ -348,8 +288,7 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
 
     /**
      * Whether a offset exists
-     * @access public
-     * @param  mixed $offset
+     * @param mixed $offset
      * @return bool
      */
     public function offsetExists($offset)
@@ -359,8 +298,7 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
 
     /**
      * Offset to retrieve
-     * @access public
-     * @param  mixed $offset
+     * @param mixed $offset
      * @return mixed
      */
     public function offsetGet($offset)
@@ -370,9 +308,8 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
 
     /**
      * Offset to set
-     * @access public
-     * @param  mixed $offset
-     * @param  mixed $value
+     * @param mixed $offset
+     * @param mixed $value
      */
     public function offsetSet($offset, $value)
     {
@@ -381,10 +318,9 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
 
     /**
      * Offset to unset
-     * @access public
-     * @param  mixed $offset
+     * @param mixed $offset
      * @return void
-     * @since  5.0.0
+     * @since 5.0.0
      */
     public function offsetUnset($offset)
     {
@@ -416,7 +352,6 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
             'total'        => $total,
             'per_page'     => $this->listRows(),
             'current_page' => $this->currentPage(),
-            'last_page'    => $this->lastPage,
             'data'         => $this->items->toArray(),
         ];
     }
