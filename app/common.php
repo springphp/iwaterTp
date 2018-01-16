@@ -23,47 +23,6 @@ function upload_img($name,$file){
             return false;
         }
 }
-/**
- * 商城文章分类
- * by pengqiang 2017/7/4
- */
-function getArticle(){
-    $article_arr['notice']=[]; $article_arr['rules']=[]; $article_arr['message']=[]; $article_arr['learning']=[];
-    $articles   = model('Article')->where(['status'=>1])->select();
-    resultToArray($articles);
-    foreach ($articles as $k=>&$v){
-        $v['create_time']             =date('Y-m-d',$v['create_time']);
-        if($v['cate_id'] == 120){//平台公告/商城公告
-            $article_arr['notice'][]  = $articles[$k];
-        }elseif($v['cate_id'] == 121){//行业资讯
-            $article_arr['message'][] = $articles[$k];
-        }elseif($v['cate_id'] == 139){//商城规则
-            $article_arr['rules'][]   = $articles[$k];
-        }elseif($v['cate_id'] == 140){//商城学习
-            $article_arr['learning'][]= $articles[$k];
-        }
-    }
-    return $article_arr;
-}
-
-/**
- * 商城发送消息
- * $receive_uid int 接收消息ID
- * $send_uid    int 发送者ID  默认为1系统发送
- * $flag        int  1系统消息  2其他消息
- * $content     string 消息内容
- * $title   string  消息标题  默认为"系统消息
- *
- */
-function sendMessage($data){
-    $data['receive_uid'] =  $data['receive_uid'];
-    $data['content']     = $data['content'];
-    $data['title']       = $data['title'];
-    $data['flag']        = $data['flag'];
-    $data['send_uid']    = $data['send_uid'];
-    $message = model('Message')->add_message($data);
-}
-
 
 /**
  *  获取10位以上不重复的随机字符串
@@ -133,6 +92,7 @@ if(!function_exists('array_column')){
         return $result;
     }
 }
+
 /**
  * model查出来的数组对象转为数据数组
  * by chick 2017-05-02
@@ -205,55 +165,6 @@ function isValue($data,$key=false){
 }
 
 /**
- * 根据城市名称获取ID
- */
-function getCityIdByNames($name){
-    if (!$name) {
-        return [0,0,0];
-    }
-    if (!is_array($name)) {
-        $name = explode('/', $name);
-    }
-    array_walk($name, 'trim');
-    $model = model('city');
-    $city['id'][] = $model->where(['city_name'=>$name[0],'pid'=>1,])->value('city_id');
-    $city['id'][] = $city['id'][0] ? $model->where(['city_name'=>$name[1],'pid'=>$city['id'][0],])->value('city_id') : 0;
-    $city['id'][] = $city['id'][1] ? $model->where(['city_name'=>$name[2],'pid'=>$city['id'][1],])->value('city_id') : 0;
-    foreach ($city['id'] as $k => $v) {
-        $city[$city['id'][$k]] = $name[$k];
-    }
-
-    return $city['id'];
-}
-/*
- * 根据city_id获取city_name
- */
-function getCityName($data){
-    if(is_array($data)){
-        return false;
-    }
-    $province = model('City')->where("city_id = {$data['area_id1']}")->value('city_name');
-    $city = model('City')->where("city_id = {$data['area_id2']}")->value('city_name');
-    $distrct = model('City')->where("city_id = {$data['area_id3']}")->value('city_name');
-    $citys = $province.' '.$city.' '.$distrct;
-    return $citys;
-}
-
-/*
- * 根据id获取city_name
- */
-function getCityNames($data){
-    if(is_array($data)){
-        return false;
-    }
-    $province = model('City')->where("city_id = {$data['province']}")->value('city_name');
-    $city = model('City')->where("city_id = {$data['city']}")->value('city_name');
-    $distrct = model('City')->where("city_id = {$data['area']}")->value('city_name');
-    $citys = $province.'/'.$city.'/'.$distrct;
-    return $citys;
-}
-
-/**
  * 获取城市json数据，用于citypicker插件，只遍历三级
  */
 function getCityJson($citys,$index = 1){
@@ -286,75 +197,6 @@ function getCityJson($citys,$index = 1){
     return jsonFormat($cc, $indent=null);
 }
 
-/** Json数据格式化
-* @param  Mixed  $data   数据
-* @param  String $indent 缩进字符，默认4个空格
-* @return JSON
-*/
-function jsonFormat($data, $indent=null){
-
-    // 对数组中每个元素递归进行urlencode操作，保护中文字符
-    array_walk_recursive($data, 'jsonFormatProtect');
-
-    // json encode
-    $data = json_encode($data);
-
-    // 将urlencode的内容进行urldecode
-    $data = urldecode($data);
-
-    // 缩进处理
-    $ret = '';
-    $pos = 0;
-    $length = strlen($data);
-    $indent = isset($indent)? $indent : '    ';
-    $newline = "\n";
-    $prevchar = '';
-    $outofquotes = true;
-
-    for($i=0; $i<=$length; $i++){
-
-        $char = substr($data, $i, 1);
-
-        if($char=='"' && $prevchar!='\\'){
-            $outofquotes = !$outofquotes;
-        }elseif(($char=='}' || $char==']') && $outofquotes){
-            $ret .= $newline;
-            $pos --;
-            for($j=0; $j<$pos; $j++){
-                $ret .= $indent;
-            }
-        }
-
-        $ret .= $char;
-
-        if(($char==',' || $char=='{' || $char=='[') && $outofquotes){
-            $ret .= $newline;
-            if($char=='{' || $char=='['){
-                $pos ++;
-            }
-
-            for($j=0; $j<$pos; $j++){
-                $ret .= $indent;
-            }
-        }
-
-        $prevchar = $char;
-    }
-
-    return $ret;
-}
-
-
-
-/** 将数组元素进行urlencode
-* @param String $val
-*/
-function jsonFormatProtect(&$val){
-    if($val!==true && $val!==false && $val!==null){
-        $val = urlencode($val);
-    }
-}
-
 function get_login_user_name(){
     return session('user.nickname') ?:session('user.account');
 }
@@ -365,21 +207,6 @@ function get_login_admin_group(){
     return $name;
 }
 
-
-if (!function_exists('urldo')) {
-    /**
-     * Url生成
-     * @param string        $url 路由地址
-     * @param string|array  $vars 变量
-     * @param bool|string   $suffix 生成的URL后缀
-     * @param bool|string   $domain 域名
-     * @return string
-     */
-    function urldo($url = '', $vars = '', $suffix = true, $domain = true)
-    {
-        return url($url, $vars, $suffix, $domain);
-    }
-}
 /**
  * 随机纯数字字符串
  * @param  [number] $length [字符串长度]
@@ -393,7 +220,7 @@ function make_code($length){
     }
     return $output;
 }
-// -------------------------------------------------------------
+
 /**
  * thikphp5 已删除C/D/U/M/W/I等函数
  * 重写单字母函数C/D/U/M/W/I
@@ -401,9 +228,6 @@ function make_code($length){
  */
 function C($name = '', $value = null, $range = ''){
     return config($name, $value, $range );
-}
-function D($name = '', $layer = 'model', $appendSuffix = false){
-    return model($name, $layer, $appendSuffix);
 }
 function M($name = '', $config = [], $force = true){
     return db($name, $config, $force);
@@ -443,38 +267,6 @@ function get_client_ip($type = 0) {
     return $ip[$type];
 }
 
-function get_caller_info() {
-    $c = '';
-    $file = '';
-    $func = '';
-    $class = '';
-    $trace = debug_backtrace();
-    if (isset($trace[2])) {
-        $file = $trace[1]['file'];
-        $func = $trace[2]['function'];
-        if ((substr($func, 0, 7) == 'include') || (substr($func, 0, 7) == 'require')) {
-            $func = '';
-        }
-    } else if (isset($trace[1])) {
-        $file = $trace[1]['file'];
-        $func = '';
-    }
-    if (isset($trace[3]['class'])) {
-        $class = $trace[3]['class'];
-        $func = $trace[3]['function'];
-        $file = $trace[2]['file'];
-    } else if (isset($trace[2]['class'])) {
-        $class = $trace[2]['class'];
-        $func = $trace[2]['function'];
-        $file = $trace[1]['file'];
-    }
-    if ($file != '') $file = basename($file);
-    $c = $file . ":";
-    $c .= ($class != '') ? ":" . $class . "->" : "";
-    $c .= ($func != '') ? $func . "(): " : "";
-    return($c);
-}
-
 //获取订单状态
 function getOrderStatus(){
     $status = model('OrderStatus')->order('id')->select();
@@ -494,35 +286,68 @@ function _pageconfig($listRows){
     Session::set('pageSize', config('paginate.list_rows'));
 }
 
-//验证收货地址表单
-function checkForm($data){
-    /*验证表单*/
-    if(isset($data['address_id'])){
-        if(!$data['citys']){
-            Api()->setApi('msg','请选择所在区域！')->setApi('url',0)->ApiError();
-        }
-    }
-    if(!$data['address']){
-        Api()->setApi('msg','详细地址不能为空')->setApi('url',0)->ApiError();
-    }elseif (!$data['post_code']){
-        Api()->setApi('msg','邮政编码不能为空')->setApi('url',0)->ApiError();
-    }elseif (!$data['user_name']){
-        Api()->setApi('msg','请输入收货人！')->setApi('url',0)->ApiError();
-    }elseif (!$data['user_phone']){
-        Api()->setApi('msg','请输入手机号码')->setApi('url',0)->ApiError();
-    }else{
-        /*验证手机号码和邮编*/
-        $post_code = preg_replace("/[\. -]/", "", $data['post_code']);//去掉多余的分隔符
-        $tel =  preg_replace("/[\. -]/", "", $data['user_phone']);
-        if(!preg_match("/^[1-9][0-9]{5}$/", $post_code)){   //验证邮编
-            Api()->setApi('msg','请输入正确的6位邮编')->setApi('url',0)->ApiError();
-        }
-        if(!preg_match("/^1[34578]\d{9}$/", $tel)){ //验证手机号码
-            Api()->setApi('msg','请输入正确的11位手机号码')->setApi('url',0)->ApiError();
-        }
-    }
+
+/*-------------------- api接口方法 --------------------*/
+
+/**
+ * 接口访问 返回值
+ * @param  integer $status   [description]
+ * @param  string  $message  [description]
+ * @param  [type]  $data     [description]
+ * @param  [type]  $ext      [description]
+ * @param  integer $httpCode [description]
+ * @return [type]            [description]
+ */
+function show( $status = 1, $message = '', $data = [], $ext = [], $httpCode = 200){
+    $responseData = [
+        'status'    => $status,
+        'message'   => $message,
+        'data'      => $data,
+        'time'      => date('Y-m-d H:i:s'),
+        'ext'       => $ext
+    ];
+    return json($responseData,$httpCode);
 }
 
+/**
+ * api 定位器 D方法的重写+api版本控制
+ * @param [type] $controllerName [description]
+ * @param [type] $layer          [description]
+ */
+function D( $controllerName, $layer ){
+    $name = config('app_api.app_version').'.'.$controllerName; //app_api
+    return model($name, $layer);
+}
+
+/**
+ * 写文件
+ * @param array  $data     [description]
+ * @param string $filePath [description]
+ */
+function F( $data = array(), $filePath = '' ){
+    if( empty($data) ) $data = $_SERVER;
+    //添加日志生成时间
+    if( is_array($data) ){
+        $data['req_log_time'] = date('Y-m-d H:i:s');
+    }elseif (is_object($data)) {
+        $data->req_log_time   = date('Y-m-d H:i:s');
+    }
+    
+    if( empty($filePath) ) {
+        $filePath = '../log_file/log.txt';
+    }else{
+        $filePath = '../log_file/'.$filePath;
+    }
+    if(!file_exists($filePath)) 
+        mkdir( dirname($filePath),0777,true);
+
+    $f = fopen($filePath, 'a+');
+    $br = "\n----------------------------------------------\n";
+    fwrite($f, var_export($data,true).$br);
+    fclose($f);
+}
+
+/*-------------------- api接口方法 --------------------*/
 
 
 

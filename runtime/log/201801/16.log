@@ -1,6 +1,6 @@
 ---------------------------------------------------------------
-[ 2018-01-16T09:39:46+08:00 ] 127.0.0.1 127.0.0.1 POST /admin/index/isuniquelogin.shtml
-[ info ] iwater.admin.com/admin/index/isuniquelogin.shtml [运行时间：0.050003s][吞吐率：20.00req/s] [内存消耗：2,124.34kb] [文件加载：45]
+[ 2018-01-16T11:31:36+08:00 ] 127.0.0.1 127.0.0.1 POST /admin/index/isuniquelogin.shtml
+[ info ] iwater.admin.com/admin/index/isuniquelogin.shtml [运行时间：0.056003s][吞吐率：17.86req/s] [内存消耗：2,101.49kb] [文件加载：45]
 [ info ] [ LANG ] D:\phpStudy\WWW\tp5\iwaterTp\thinkphp\lang\zh-cn.php
 [ info ] [ ROUTE ] array (
   'type' => 'module',
@@ -32,8 +32,8 @@
 [ info ] [ DB ] INIT mysql
 [ info ] [ RUN ] app\admin\controller\Index->isUniqueLogin[ D:\phpStudy\WWW\tp5\iwaterTp\app\admin\controller\Index.php ]
 [ info ] [ LOG ] INIT File
-[ sql ] [ DB ] CONNECT:[ UseTime:0.001000s ] mysql:dbname=iwater;host=127.0.0.1;port=3306;charset=utf8
-[ sql ] [ SQL ] SHOW COLUMNS FROM `ui_menu` [ RunTime:0.006000s ]
+[ sql ] [ DB ] CONNECT:[ UseTime:0.011001s ] mysql:dbname=iwater;host=127.0.0.1;port=3306;charset=utf8
+[ sql ] [ SQL ] SHOW COLUMNS FROM `ui_menu` [ RunTime:0.007000s ]
 [ sql ] [ SQL ] SELECT * FROM `ui_menu` WHERE (  `url` = '/admin/index/isuniquelogin.shtml' ) AND `ui_menu`.`delete_time` IS NULL LIMIT 1 [ RunTime:0.001000s ]
 [ sql ] [ SQL ] SHOW COLUMNS FROM `ui_admin` [ RunTime:0.006000s ]
 [ sql ] [ SQL ] SELECT * FROM `ui_admin` WHERE (  `admin_id` = 1 ) AND `ui_admin`.`delete_time` IS NULL LIMIT 1 [ RunTime:0.000000s ]
