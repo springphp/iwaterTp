@@ -42,6 +42,7 @@ class Think
         if (empty($this->config['view_path'])) {
             $this->config['view_path'] = App::$modulePath . 'view' . DS;
         }
+
         $this->template = new Template($this->config);
     }
 
@@ -117,11 +118,6 @@ class Think
             $path   = $this->config['view_base'] . ($module ? $module . DS : '');
         } else {
             $path = isset($module) ? APP_PATH . $module . DS . 'view' . DS : $this->config['view_path'];
-        }
-
-        /* chick 2017-06-08 */
-        if ($this->config['view_theme']) {
-            $path .= $this->config['view_theme'].DS;
         }
 
         $depr = $this->config['view_depr'];

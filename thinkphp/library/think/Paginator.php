@@ -17,7 +17,6 @@ use Countable;
 use IteratorAggregate;
 use JsonSerializable;
 use Traversable;
-use think\Request;
 
 abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, JsonSerializable
 {
@@ -52,14 +51,12 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
 
     public function __construct($items, $listRows, $currentPage = null, $total = null, $simple = false, $options = [])
     {
-        // $currentPage = input(config('paginate.var_page')) ?: $currentPage;
-        $currentPage = Request::instance()->request('page')?: $currentPage;
-        $this->listRows = Request::instance()->request('pageSize')?:(Session::get('pageSize')?:$listRows);
-        Session::set('pageSize', $this->listRows);
         $this->options = array_merge($this->options, $options);
+
         $this->options['path'] = '/' != $this->options['path'] ? rtrim($this->options['path'], '/') : $this->options['path'];
+
         $this->simple   = $simple;
-        // $this->listRows = $listRows;
+        $this->listRows = $listRows;
 
         if (!$items instanceof Collection) {
             $items = Collection::make($items);
@@ -71,11 +68,10 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
             $items             = $items->slice(0, $this->listRows);
         } else {
             $this->total       = $total;
-            $this->lastPage    = (int) ceil($total / $this->listRows);
+            $this->lastPage    = (int) ceil($total / $listRows);
             $this->currentPage = $this->setCurrentPage($currentPage);
             $this->hasMore     = $this->currentPage < $this->lastPage;
         }
-        // dump($currentPage);
         $this->items = $items;
     }
 
@@ -139,7 +135,8 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
      */
     public static function getCurrentPage($varPage = 'page', $default = 1)
     {
-        $page = Request::instance()->request($varPage)?:input($varPage);
+        $page = Request::instance()->request($varPage);
+
         if (filter_var($page, FILTER_VALIDATE_INT) !== false && (int) $page >= 1) {
             return $page;
         }
@@ -277,6 +274,23 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
     }
 
     /**
+     * 给每个元素执行个回调
+     *
+     * @param  callable $callback
+     * @return $this
+     */
+    public function each(callable $callback)
+    {
+        foreach ($this->items as $key => $item) {
+            if ($callback($item, $key) === false) {
+                break;
+            }
+        }
+
+        return $this;
+    }
+
+    /**
      * Retrieve an external iterator
      * @return Traversable An instance of an object implementing <b>Iterator</b> or
      * <b>Traversable</b>
@@ -352,6 +366,7 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
             'total'        => $total,
             'per_page'     => $this->listRows(),
             'current_page' => $this->currentPage(),
+            'last_page'    => $this->lastPage,
             'data'         => $this->items->toArray(),
         ];
     }

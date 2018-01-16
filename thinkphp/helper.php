@@ -192,7 +192,7 @@ if (!function_exists('db')) {
      * @param bool          $force 是否强制重新连接
      * @return \think\db\Query
      */
-    function db($name = '', $config = [], $force = true)
+    function db($name = '', $config = [], $force = false)
     {
         return Db::connect($config, $force)->name($name);
     }
@@ -441,9 +441,9 @@ if (!function_exists('view')) {
      * @param integer   $code 状态码
      * @return \think\response\View
      */
-    function view($template = '',$vars = [], $replace = [], $code = 200)
+    function view($template = '', $vars = [], $replace = [], $code = 200)
     {
-        if (is_array($template)) {
+        if( is_array($template) ){
             $vars = $template;
             $template = '';
         }

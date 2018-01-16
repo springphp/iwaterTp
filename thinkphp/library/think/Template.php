@@ -33,7 +33,7 @@ class Template
         'tpl_deny_php'       => false, // 默认模板引擎是否禁用PHP原生代码
         'tpl_begin'          => '{', // 模板引擎普通标签开始标记
         'tpl_end'            => '}', // 模板引擎普通标签结束标记
-        'strip_space'        => true, // 是否去除模板文件里面的html空格与换行
+        'strip_space'        => false, // 是否去除模板文件里面的html空格与换行
         'tpl_cache'          => true, // 是否开启模板编译缓存,设为false则每次都会重新编译
         'compile_type'       => 'file', // 模板编译类型
         'cache_prefix'       => '', // 模板缓存前缀标识，可以动态改变
@@ -1077,6 +1077,7 @@ class Template
             }
             $template = $path . $template . '.' . ltrim($this->config['view_suffix'], '.');
         }
+
         if (is_file($template)) {
             // 记录模板文件的更新时间
             $this->includeFile[$template] = filemtime($template);

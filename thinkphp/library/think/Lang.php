@@ -71,7 +71,6 @@ class Lang
     public static function load($file, $range = '')
     {
         $range = $range ?: self::$range;
-
         if (!isset(self::$lang[$range])) {
             self::$lang[$range] = [];
         }

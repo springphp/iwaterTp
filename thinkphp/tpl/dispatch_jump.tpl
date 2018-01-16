@@ -15,32 +15,30 @@
     </style>
 </head>
 <body>
-    <div class="system-message" style="text-align: center;margin:210px auto;border:1px solid #eee;">
-        <?php switch ($code) {  ?>
+    <div class="system-message">
+        <?php switch ($code) {?>
             <?php case 1:?>
-            <p class="success"  style="font-size:24px;color:#999;"><?php echo(strip_tags($msg));?></p>
+            <h1>:)</h1>
+            <p class="success"><?php echo(strip_tags($msg));?></p>
             <?php break;?>
             <?php case 0:?>
-            <p class="error"    style="font-size:24px;color:#999;"><?php echo(strip_tags($msg));?></p>
+            <h1>:(</h1>
+            <p class="error"><?php echo(strip_tags($msg));?></p>
             <?php break;?>
         <?php } ?>
         <p class="detail"></p>
-        <p class="jump" <?php if($url==0){echo "style='display:none;'";} ?>>
-            页面自动 <a id="href" href="<?php echo($url);?>" style="color:#600;text-decoration: none;">跳转</a> 等待时间： <b id="wait"><?php echo($wait);?></b>
+        <p class="jump">
+            页面自动 <a id="href" href="<?php echo($url);?>">跳转</a> 等待时间： <b id="wait"><?php echo($wait);?></b>
         </p>
     </div>
     <script type="text/javascript">
         (function(){
             var wait = document.getElementById('wait'),
-                href = document.getElementById('href').getAttribute('href');
+                href = document.getElementById('href').href;
             var interval = setInterval(function(){
                 var time = --wait.innerHTML;
                 if(time <= 0) {
-                    if (href == 0 || href == '0') {
-                        parent.layer && parent.layer.getFrameIndex(window.name) && parent.layer.closeAll('iframe');
-                    } else {
-                        location.href = href;
-                    }
+                    location.href = href;
                     clearInterval(interval);
                 };
             }, 1000);

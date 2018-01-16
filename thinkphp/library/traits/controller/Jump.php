@@ -41,7 +41,6 @@ trait Jump
             $code = $msg;
             $msg  = '';
         }
-
         if (is_null($url) && isset($_SERVER["HTTP_REFERER"])) {
             $url = $_SERVER["HTTP_REFERER"];
         } elseif ('' !== $url) {
@@ -81,14 +80,11 @@ trait Jump
             $code = $msg;
             $msg  = '';
         }
-        if($url === 0 || $url === '0'){
-
-        } else if (is_null($url)) {
+        if (is_null($url)) {
             $url = Request::instance()->isAjax() ? '' : 'javascript:history.back(-1);';
         } elseif ('' !== $url) {
             $url = (strpos($url, '://') || 0 === strpos($url, '/')) ? $url : Url::build($url);
         }
-
         $result = [
             'code' => $code,
             'msg'  => $msg,
@@ -96,6 +92,7 @@ trait Jump
             'url'  => $url,
             'wait' => $wait,
         ];
+
         $type = $this->getResponseType();
         if ('html' == strtolower($type)) {
             $result = ViewTemplate::instance(Config::get('template'), Config::get('view_replace_str'))
